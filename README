@@ -1,10 +1,6 @@
 #####################################################################
-# CS:APP Malloc Lab
-# Handout files for students
-#
-# Copyright (c) 2002, R. Bryant and D. O'Hallaron, All rights reserved.
-# May not be used, modified, or copied without permission.
-#
+# CS:APP Malloc Implementation from CMU 15213(computer systems a programmer's perspective)
+# Name: KArthikeyan(self-study student)
 ######################################################################
 
 ***********
@@ -49,4 +45,26 @@ The -V option prints out helpful tracing and summary information.
 To get a list of the driver flags:
 
 	unix> mdriver -h
+###############################################################################
+Performance Measurement:
+###############################################################################
+[User malloclab-handout]$ ./mdriver -v -a -t traces/
+Using default tracefiles in traces/
+Measuring performance with gettimeofday().
 
+Results for mm malloc:
+trace  valid  util     ops      secs  Kops
+ 0       yes   99%    5694  0.008570   664
+ 1       yes   99%    5848  0.007850   745
+ 2       yes   99%    6648  0.013544   491
+ 3       yes  100%    5380  0.010153   530
+ 4       yes   66%   14400  0.000470 30651
+ 5       yes   93%    4800  0.008804   545
+ 6       yes   92%    4800  0.008450   568
+ 7       yes   55%    6000  0.048829   123
+ 8       yes   51%    7200  0.031457   229
+ 9       yes   27%   14401  0.120709   119
+10       yes   34%   14401  0.003976  3622
+Total          74%   89572  0.262812   341
+
+Perf index = 44 (util) + 23 (thru) = 67/100
