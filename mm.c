@@ -68,6 +68,10 @@ team_t team = {
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
 
+/*Enable / Disable Checkheap*/
+
+//#define checkheap(line) mm_heapcheck(line)
+#define checkheap(line)
 
 void *heap_listp;
 /* 
@@ -124,6 +128,7 @@ void mm_free(void *bp)
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
     coalesce(bp);
+    checkheap(__LINE__);
 }
 static void *coalesce(void *bp)
     {
@@ -160,6 +165,7 @@ static void *coalesce(void *bp)
 
 void *mm_malloc(size_t size)
     {
+    //checkheap(__LINE__);
     size_t asize; /* Adjusted block size */
     size_t extendsize; /* Amount to extend heap if no fit */
     char *bp;
@@ -185,6 +191,7 @@ void *mm_malloc(size_t size)
     if ((bp = extend_heap(extendsize/WSIZE)) == NULL)
         return NULL;
     place(bp, asize);
+    checkheap(__LINE__);
     return bp;
     }
 static void *find_fit(size_t asize)
@@ -216,26 +223,7 @@ static void place(void *bp, size_t asize)
         PUT(FTRP(bp), PACK(csize, 1));
     }
 }
-/*
- * mm_realloc - Implemented simply in terms of mm_malloc and mm_free
- */
-/*
-void *mm_realloc(void *ptr, size_t size)
-{
-    void *oldptr = ptr;
-    void *newptr;
-    size_t copySize;
-    
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
-      return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
-    if (size < copySize)
-      copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
-}
+
 
 /*
  * realloc - Naive implementation of realloc
@@ -270,18 +258,92 @@ void *mm_realloc(void *ptr, size_t size)
     /* Free the old block. */
     memcpy(newptr, ptr, oldsize);
     mm_free(ptr);
+    checkheap(__LINE__);
     return newptr;
     //return NULL;
 }
+/*mm_heapcheck checks invariants. Below Invariants are covered,
+Heap Invariants:
+-----------------
+1. Check Heap Boundaries (i.e) Prologue and Epilogue blocks are at specified
+locations
+2. All Blocks stay in between heap boundaries
+Block Invariants:
+------------------
+1. HDR and FTR should match
+2. Check Block is aligned
+
+Free List Invariants:
+----------------------
+1. Check All Free Blocks are coalesced
+*/
+
+static void mm_heapcheck(int line){
+    void *ptr = heap_listp;
+    /*Checking Heap Invariants- Is Prologue placed at correct place*/
+    if((GET_SIZE(HDRP(ptr))!= DSIZE) || !GET_ALLOC(HDRP(ptr))){
+        printf("Failure at line:%d\n",line);
+        printf("Address of prologue:%p ****Prologue Error****",ptr);
+        assert(0);
+    }
+    ptr = NEXT_BLKP(ptr);
+    while(!((GET_SIZE(HDRP(ptr))==0)&&(GET_ALLOC(HDRP(ptr))==1))){
+        /*Checking Heap Invariants*/
+        checkHeapBoundary(ptr);
+        /*Checking Block Invariants*/
+        checkBlock(ptr);
+        /*Checking Free List Invariants*/
+        checkFreeBlkCoalesced(ptr);
+        ptr = NEXT_BLKP(ptr);
+        }
+}
 
 
+static void checkHeapBoundary(void *ptr){
+    if (!heapBound){
+            printf("Address of block:%p ****Heap bounds Error****",ptr);
+            assert(0);
+    }
+}
 
+static int heapBound(void *ptr){
+    return (ptr <= mem_heap_hi() && ptr >= mem_heap_lo());
+}
+/*CheckBlock - Checks Block level invariants
+1. HDR and FTR should match
+2. Check Block is aligned
+*/
+static checkBlock(void *ptr){
+    if (!isHdrFtrMatch){
+        printf("Address of block:%p ****Error: HDR SIZE and FTR SIZE not matching****",ptr);
+        assert(0);
+    }
+    if (!isBlockAligned){
+        printf("Address of block:%p ***Error: Block is not aligned****",ptr);
+        assert(0);
+    }
+}
+static int isHdrFtrMatch(void *ptr){
+     if ((GET_SIZE(HDRP(ptr)))==(GET_SIZE(FTRP(ptr))))
+        return ((GET_ALLOC(HDRP(ptr)))==(GET_ALLOC(FTRP(ptr))));
+}
 
+static int isBlockAligned(void *ptr){
+    return ((GET_SIZE(HDRP(ptr))%DSIZE)==0);
+}
 
+/*
+Checking Free List Invariatns
+1. Check All Free Blocks are coalesced*/
+static void checkFreeBlkCoalesced(void *ptr){
+    if (!isFreeBlkCoalesced){
+        printf("Address of block:%p ***Error: Free Blocks not coalesced****",ptr);
+        assert(0);
+    }
+}
 
-
-
-
-
-
-
+static int isFreeBlkCoalesced(void *ptr){
+    /*If the Block is free, it should be coalesced if prev/next block also free*/
+    if (GET_ALLOC(HDRP(ptr))==0)
+        return ((GET_ALLOC(HDRP(PREV_BLKP(ptr))))||(GET_ALLOC(HDRP(NEXT_BLKP(ptr)))));
+}
