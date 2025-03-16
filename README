@@ -48,23 +48,39 @@ To get a list of the driver flags:
 ###############################################################################
 Performance Measurement:
 ###############################################################################
-[User malloclab-handout]$ ./mdriver -v -a -t traces/
+
+root@LAPTOP-97G9G880:~/karthi/malloc-implementation# ./mdriver -l -v -a -t traces/
 Using default tracefiles in traces/
 Measuring performance with gettimeofday().
 
+Results for libc malloc:
+trace  valid  util     ops      secs  Kops
+ 0       yes    0%    5694  0.000364 15634
+ 1       yes    0%    5848  0.000265 22076
+ 2       yes    0%    6648  0.000798  8332
+ 3       yes    0%    5380  0.000772  6966
+ 4       yes    0%   14400  0.000234 61617
+ 5       yes    0%    4800  0.000546  8798
+ 6       yes    0%    4800  0.000363 13234
+ 7       yes    0%    6000  0.000088 68027
+ 8       yes    0%    7200  0.000087 82949
+ 9       yes    0%   14401  0.000684 21069
+10       yes    0%   14401  0.000129111377
+Total           0%   89572  0.004329 20691
+
 Results for mm malloc:
 trace  valid  util     ops      secs  Kops
- 0       yes   99%    5694  0.008570   664
- 1       yes   99%    5848  0.007850   745
- 2       yes   99%    6648  0.013544   491
- 3       yes  100%    5380  0.010153   530
- 4       yes   66%   14400  0.000470 30651
- 5       yes   93%    4800  0.008804   545
- 6       yes   92%    4800  0.008450   568
- 7       yes   55%    6000  0.048829   123
- 8       yes   51%    7200  0.031457   229
- 9       yes   27%   14401  0.120709   119
-10       yes   34%   14401  0.003976  3622
-Total          74%   89572  0.262812   341
+ 0       yes   99%    5694  0.006559   868
+ 1       yes   99%    5848  0.007162   817
+ 2       yes   99%    6648  0.010320   644
+ 3       yes  100%    5380  0.007111   757
+ 4       yes   66%   14400  0.000095152059
+ 5       yes   93%    4800  0.005530   868
+ 6       yes   92%    4800  0.005614   855
+ 7       yes   55%    6000  0.023863   251
+ 8       yes   51%    7200  0.027390   263
+ 9       yes   27%   14401  0.048977   294
+10       yes   34%   14401  0.001258 11452
+Total          74%   89572  0.143879   623
 
-Perf index = 44 (util) + 23 (thru) = 67/100
+Perf index = 44 (util) + 40 (thru) = 84/100
